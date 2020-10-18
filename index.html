@@ -44,11 +44,13 @@
             <th>Emoji</th>
             <th>Quantity</th>
             <th>Price</th>
+            <th>Remove One</th>
           </tr>
         </thead>
         <tbody>
         </tbody>
       </table>
+      <p><strong>Total: </strong><span id="total"></span></p>
       <p><button type="submit">Checkout</button></p>
       </form>
     </section>
@@ -70,6 +72,17 @@
   function populateCart() {
     var cartBody = document.querySelector("#cart > tbody");
     var cart = getCart();
+
+    // update total
+    var totalEl = document.getElementById("total");
+    var total = Object.keys(cart).reduce((prev, curr) => {
+      var q = cart[curr].quantity;
+      var p = cart[curr].data.price;
+      return prev + (q*p);
+    }, 0);
+    console.log(total);
+    totalDollars = total / 100;
+    totalEl.innerText = `$${totalDollars}`;
 
     // remove all cart items
     while (cartBody.firstChild) {
@@ -93,6 +106,19 @@
       price.innerText = `$${dollars}`;
       tr.appendChild(price);
 
+      var rem = document.createElement("td");
+      var but = document.createElement("button");
+
+      function removeListener(id) {
+        return function(e) {
+          removeFromCart(id);
+        }
+      }
+      but.addEventListener("click", removeListener(item));
+      but.innerText = "❌";
+      rem.appendChild(but);
+      tr.appendChild(rem);
+
       cartBody.appendChild(tr);
     }
   }
@@ -107,6 +133,26 @@
 
     localStorage.setItem('cart', JSON.stringify(cart));
     
+    populateCart();
+  }
+
+  function removeFromCart(id) {
+    var cart = getCart();
+    if (!cart[id]) {
+      console.error(`${id} not found in cart`);
+      return;
+    }
+
+    var prevQuantity = cart[id].quantity;
+    if (prevQuantity === 1) {
+      // remove item if will go to 0
+      delete cart[id];
+    } else {
+      cart[id].quantity = prevQuantity - 1;
+    }
+
+    localStorage.setItem('cart', JSON.stringify(cart));
+
     populateCart();
   }
 
