@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+  <meta name="viewport" content="width=device-width">
+
+  <title>My Cool Shop</title>
+
+  <link rel="stylesheet" href="https://unpkg.com/mvp.css">
+</head>
+
+<body>
+  <header>
+    <h1>Vote with your dollars 💸</h1>
+  </header>
+  <main>
+    <section>
+      <header>
+        <h2>Choose your favorite emoji</h2>
+      </header>
+      <aside>
+        <h3>Flying Money 💸</h3>
+        <button type="submit" data-id='flying-money' data-description='Flying Money 💸' data-price='500'>
+          Vote
+        </button>
+      </aside>
+      <aside>
+        <h3>Money Bag 💰</h3>
+        <button type="submit" data-id='money-bag' data-description='Money Bag 💰' data-price='500'>
+          Vote
+        </button>
+      </aside>
+    </section>
+    <section>
+      <form>
+      <header>
+        <h2>Cart</h2>
+      </header>
+      <table id="cart">
+        <thead>
+          <tr>
+            <th>Emoji</th>
+            <th>Quantity</th>
+            <th>Price</th>
+          </tr>
+        </thead>
+        <tbody>
+        </tbody>
+      </table>
+      <p><button type="submit">Checkout</button></p>
+      </form>
+    </section>
+  </main>
+</body>
+<script>
+  populateCart();
+
+  var addButtons = document.querySelectorAll("button[data-id]");
+  
+  addButtons.forEach(butt => {
+    butt.addEventListener("click", event => {
+      var data = {...butt.dataset};
+      console.log(`${data.id} clicked - ${JSON.stringify(data)}`);
+      addToCart(data);
+    });
+  });
+
+  function populateCart() {
+    var cartBody = document.querySelector("#cart > tbody");
+    var cart = getCart();
+
+    // remove all cart items
+    while (cartBody.firstChild) {
+      cartBody.removeChild(cartBody.firstChild);
+    }
+
+    // add cart items back
+    for (var item in cart) {
+      var cartItem = cart[item];
+      var tr = document.createElement("tr");
+      var desc = document.createElement("td");
+      desc.innerText = cartItem.data.description;
+      tr.appendChild(desc);
+
+      var quantity = document.createElement("td");
+      quantity.innerText = cartItem.quantity;
+      tr.appendChild(quantity);
+
+      var price = document.createElement("td");
+      var dollars = cartItem.data.price / 100;
+      price.innerText = `$${dollars}`;
+      tr.appendChild(price);
+
+      cartBody.appendChild(tr);
+    }
+  }
+
+  function addToCart(data) {
+    var cart = getCart()
+    var prevQuantity = cart[data.id] ? cart[data.id].quantity : 0;
+    cart[data.id] = {
+      quantity: prevQuantity + 1,
+      data,
+    }
+
+    localStorage.setItem('cart', JSON.stringify(cart));
+    
+    populateCart();
+  }
+
+  function getCart() {
+    return JSON.parse(localStorage.getItem('cart')) || {};
+  }
+
+  window.addEventListener("storage", function(e) {
+    populateCart();
+  })
+</script>
+
+</html>
